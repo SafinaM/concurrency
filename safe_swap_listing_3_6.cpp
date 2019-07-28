@@ -21,6 +21,6 @@ public:
 		// the std::adopt_lock paremeter which indicates that mutexes are already locked
 		std::lock_guard<std::mutex> lock_a(lhs.m, std::adopt_lock);
 		std::lock_guard<std::mutex> lock_b(rhs.m, std::adopt_lock);
-		swap(lhs.some_detail, rhs.some_detail);
+		swap(lhs .some_detail, rhs.some_detail);
 	}
 };
