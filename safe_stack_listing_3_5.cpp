@@ -1,6 +1,7 @@
 #include <exception>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <stack>
 
 struct empty_stack: std::exception {
@@ -8,19 +9,19 @@ struct empty_stack: std::exception {
 };
 
 template <typename T>
-class threadsafe_stack {
+class threadsafe_list {
 private:
 	std::stack<T> data;
 	mutable std::mutex m;
 public:
-	threadsafe_stack() {}
+	threadsafe_list() {}
 	
-	threadsafe_stack(const threadsafe_stack& other) {
+	threadsafe_list(const threadsafe_list& other) {
 		std::lock_guard<std::mutex> lock(other.m);
 		// copy performed in constructor body
 		data = other.data;
 	}
-	threadsafe_stack& operator=(const threadsafe_stack&) = delete;
+	threadsafe_list& operator=(const threadsafe_list&) = delete;
 	
 	void push(T new_value) {
 		std::lock_guard<std::mutex> lock(m);
