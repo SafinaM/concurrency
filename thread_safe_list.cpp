@@ -50,8 +50,8 @@ protected:
 
 struct Tmp {
 	int data = 0;
-	std::chrono::time_point<std::chrono::system_clock> now;
-	Tmp(const int& data = 0): data(data), now(std::chrono::system_clock::now()) {}
+	uint32_t now;
+	Tmp(const int& data = 0): data(data), now(std::chrono::system_clock::now().time_since_epoch().count()) {}
 	Tmp&operator= (const Tmp& other) {
 		if(&other == this)
 			return *this;
@@ -156,10 +156,9 @@ void pop_front(threadsafe_list<T>& list, T& value) {
 	list.pop_front(value);
 }
 
-
 void pop_back(threadsafe_list<Tmp>& list, Tmp& value) {
 	list.pop_back(value);
-	std::cout << value.data << "  " << std::chrono::system_clock::to_time_t(value.now) << std::endl;
+	std::cout << value.data << "  " << value.now << std::endl;
 }
 
 template <class T>
@@ -171,11 +170,13 @@ int main() {
 	threadsafe_list<Tmp> list;
 	const long long numberOfElements = 10000;
 	for (uint32_t i = 0; i < numberOfElements; ++i) {
-		Tmp tmp = Tmp(numberOfElements - i);
-		std::thread t1(fillVector<Tmp>, std::ref(list), tmp);
-		std::thread t2(fillVector<Tmp>, std::ref(list), tmp);
+		Tmp tmp1 = Tmp(numberOfElements - i);
+		std::thread t1(fillVector<Tmp>, std::ref(list), tmp1);
+		Tmp tmp2 = Tmp(numberOfElements - i);
+		std::thread t2(fillVector<Tmp>, std::ref(list), tmp2);
 		Tmp value;
 		std::thread t4(pop_back,  std::ref(list), std::ref(value));
+		
 		std::thread t6(sortList<Tmp>, std::ref(list));
 		
 		t1.join();
