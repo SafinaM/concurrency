@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <cstdint>
+#include <algorithm>
 
 #define PHILO 5
 #define DELAY 30000
@@ -18,96 +19,129 @@
 
 pthread_mutex_t forks[PHILO];
 pthread_t phils[PHILO];
+bool busy[PHILO];
+int countOfEatings[PHILO];
+int sortedCountofEatings[PHILO];
 void *philosopher (void *id);
 int food_on_table ();
 void get_fork (int, int, const char *);
 void down_forks (int, int);
 pthread_mutex_t foodlock;
-
+int f = FOOD;
 int sleep_seconds = 0;
 
 int main(int argc, char **argv)
 {
+	for (int i = 0; i < PHILO; ++i) {
+		busy[i] = false;
+		countOfEatings[i] = 0;
+		sortedCountofEatings[0] = 0;
+	}
 	int i;
-	
 	if (argc == 2)
-		sleep_seconds = atoi (argv[1]);
+		sleep_seconds = atoi(argv[1]);
 	
-	pthread_mutex_init (&foodlock, NULL);
+	pthread_mutex_init(&foodlock, NULL);
 	for (i = 0; i < PHILO; i++)
-		pthread_mutex_init (&forks[i], NULL);
-	for (i = 0; i < PHILO; i++)
-		pthread_create (&phils[i], NULL, philosopher, &i);
+		pthread_mutex_init(&forks[i], NULL);
+	for (i = 0; i < PHILO; i++) {
+		printf("i %d\n", i);
+		pthread_create(&phils[i], NULL, philosopher, &i);
+	}
 	for (i = 0; i < PHILO; i++)
 		pthread_join (phils[i], NULL);
+	
+	for (int i = 0; i < PHILO; ++i) {
+		printf("Philosofer %d, eats %d times\n", i, countOfEatings[i]);
+	}
 	return 0;
 }
 
-void *
-philosopher (void *num)
+void*
+philosopher(void *num)
 {
+	int number = *static_cast<int*>(num);
+	printf("num %d\n", number);
 	int id;
-	int left_fork, right_fork, f;
+	int left_fork, right_fork;
+	int left, right;
 	
-	id = (intptr_t)num;
-	printf ("Philosopher %d sitting down to dinner.\n", id);
+	id = (intptr_t)number;
+	printf("Philosopher %d sitting down to dinner.\n", id);
 	right_fork = id;
 	left_fork = id + 1;
 	
 	/* Wrap around the forks. */
 	if (left_fork == PHILO)
 		left_fork = 0;
-	
-	while (f = food_on_table ()) {
-		
+	right = number;
+	left = number + 1;
+	if (number == PHILO)
+		left = 0;
+	while (f > 0) {
+		if (f == 0)
+			break;
 		/* Thanks to philosophers #1 who would like to
 		 * take a nap before picking up the forks, the other
 		 * philosophers may be able to eat their dishes and
 		 * not deadlock.
 		 */
-		if (id == 1)
-			sleep (sleep_seconds);
+		int min = 0;
+		int max = 0;
+		for (int i = 0; i < PHILO; ++i) {
+			if (countOfEatings[min] > countOfEatings[i])
+				min = i;
+			if (countOfEatings[max] < countOfEatings[i])
+				max = i;
+		}
 		
-		printf ("Philosopher %d: get dish %d.\n", id, f);
-		get_fork (id, right_fork, "right");
-		get_fork (id, left_fork, "left ");
-		
-		printf ("Philosopher %d: eating.\n", id);
-		usleep (DELAY * (FOOD - f + 1));
-		down_forks (left_fork, right_fork);
+		if (number == 1)
+			sleep(sleep_seconds);
+		get_fork(id, left_fork, "left");
+		get_fork(id, right_fork, "right");
+	
+		f = food_on_table();
+		++countOfEatings[number];
+		printf("Philosopher %d: get dish %d.\n", id, f);
+		printf("Philosopher %d: eating.\n", id);
+		usleep(DELAY * (FOOD - f + 1));
+		down_forks(right_fork, left_fork);
+		printf("Philosopher %d is done eating.\n", id);
 	}
-	printf ("Philosopher %d is done eating.\n", id);
 	return (NULL);
 }
 
 int
-food_on_table ()
+food_on_table()
 {
+	printf("food_on_table");
 	static int food = FOOD;
 	int myfood;
 	
-	pthread_mutex_lock (&foodlock);
+	pthread_mutex_lock(&foodlock);
 	if (food > 0) {
 		food--;
 	}
 	myfood = food;
-	pthread_mutex_unlock (&foodlock);
+	pthread_mutex_unlock(&foodlock);
 	return myfood;
 }
 
 void
-get_fork (int phil,
-		  int fork,
-		const char *hand)
+get_fork(int phil,
+		 int fork,
+		 const char *hand)
 {
-	pthread_mutex_lock (&forks[fork]);
 	printf("Philosopher %d: got %s fork %d\n", phil, hand, fork);
+	pthread_mutex_lock(&forks[fork]);
+	busy[fork] = true;
 }
 
 void
-down_forks (int f1,
-			int f2)
+down_forks (int f1, int f2)
 {
 	pthread_mutex_unlock (&forks[f1]);
+	busy[f1] = false;
 	pthread_mutex_unlock (&forks[f2]);
+	busy[f2] = false;
 }
