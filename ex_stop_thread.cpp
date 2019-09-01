@@ -9,10 +9,8 @@ void printSomething(const std::string& passedStr) {
 	while (!stopped) {
 		std::cout << passedStr << std::endl;
 	}
-	if (stopped) {
-		std::cout << "pthread_cleanup_push" << std::endl;
-		cleaned = true;
-	}
+	std::cout << "pthread_cleanup_push" << std::endl;
+	cleaned = true;
 }
 
 int main() {
