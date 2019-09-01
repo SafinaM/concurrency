@@ -19,7 +19,6 @@
 
 pthread_mutex_t forks[PHILO];
 pthread_t phils[PHILO];
-bool busy[PHILO];
 int countOfEatings[PHILO];
 int sortedCountofEatings[PHILO];
 void *philosopher (void *id);
@@ -33,7 +32,6 @@ int sleep_seconds = 0;
 int main(int argc, char **argv)
 {
 	for (int i = 0; i < PHILO; ++i) {
-		busy[i] = false;
 		countOfEatings[i] = 0;
 		sortedCountofEatings[0] = 0;
 	}
@@ -45,7 +43,6 @@ int main(int argc, char **argv)
 	for (i = 0; i < PHILO; i++)
 		pthread_mutex_init(&forks[i], NULL);
 	for (i = 0; i < PHILO; i++) {
-		printf("i %d\n", i);
 		pthread_create(&phils[i], NULL, philosopher, &i);
 	}
 	for (i = 0; i < PHILO; i++)
@@ -64,8 +61,6 @@ philosopher(void *num)
 	printf("num %d\n", number);
 	int id;
 	int left_fork, right_fork;
-	int left, right;
-	
 	id = (intptr_t)number;
 	printf("Philosopher %d sitting down to dinner.\n", id);
 	right_fork = id;
@@ -74,10 +69,6 @@ philosopher(void *num)
 	/* Wrap around the forks. */
 	if (left_fork == PHILO)
 		left_fork = 0;
-	right = number;
-	left = number + 1;
-	if (number == PHILO)
-		left = 0;
 	while (f > 0) {
 		if (f == 0)
 			break;
@@ -95,7 +86,7 @@ philosopher(void *num)
 				max = i;
 		}
 		
-		if (number == 1)
+		if (max == number)
 			sleep(sleep_seconds);
 		get_fork(id, left_fork, "left");
 		get_fork(id, right_fork, "right");
@@ -106,6 +97,8 @@ philosopher(void *num)
 		printf("Philosopher %d: eating.\n", id);
 		usleep(DELAY * (FOOD - f + 1));
 		down_forks(right_fork, left_fork);
+		if (!f)
+			break;
 		printf("Philosopher %d is done eating.\n", id);
 	}
 	return (NULL);
@@ -114,10 +107,9 @@ philosopher(void *num)
 int
 food_on_table()
 {
-	printf("food_on_table");
 	static int food = FOOD;
 	int myfood;
-	
+	printf("FOOD %d\n", food);
 	pthread_mutex_lock(&foodlock);
 	if (food > 0) {
 		food--;
@@ -132,16 +124,13 @@ get_fork(int phil,
 		 int fork,
 		 const char *hand)
 {
-	printf("Philosopher %d: got %s fork %d\n", phil, hand, fork);
 	pthread_mutex_lock(&forks[fork]);
-	busy[fork] = true;
+	printf("Philosopher %d: got %s fork %d\n", phil, hand, fork);
 }
 
 void
 down_forks (int f1, int f2)
 {
 	pthread_mutex_unlock (&forks[f1]);
-	busy[f1] = false;
 	pthread_mutex_unlock (&forks[f2]);
-	busy[f2] = false;
 }
