@@ -62,10 +62,11 @@ private:
 
 int main() {
 	{
-		std::chrono::milliseconds ms(200);
-		PingPongPlayer player(ms, 20);
+		std::chrono::milliseconds ms(50);
+		const uint32_t number = 100;
+		PingPongPlayer player(ms, number);
 		player.pingPong();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(ms * number * 2));
 	}
 
 	
