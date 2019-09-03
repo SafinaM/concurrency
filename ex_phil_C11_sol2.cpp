@@ -6,11 +6,11 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <map>
 #include <iomanip>
-//#include <string_view>
 
-std::mutex g_lockprint;
-constexpr  int no_of_philosophers = 5;
+std::mutex g_lockPrint;
+constexpr int numberOfPhilosophers = 5;
 
 struct fork
 {
@@ -20,67 +20,75 @@ struct fork
 struct table
 {
 	std::atomic<bool>                    ready{ false };
-	std::array<fork, no_of_philosophers> forks;
+	std::array<fork, numberOfPhilosophers> forks;
 };
+
+std::map<std::string, int> counter;
 
 struct philosopher
 {
 private:
 	std::string const name;
-	table const &     dinnertable;
-	fork&             left_fork;
-	fork&             right_fork;
-	std::thread       lifethread;
+	table const &     dinnerTable;
+	fork&             leftFork;
+	fork&             rightFork;
+	std::thread       lifeThread;
 	std::mt19937      rng{ std::random_device{}() };
 public:
+	
+	
 	philosopher(const std::string& n, table const & t, fork & l, fork & r) :
-		name(n), dinnertable(t), left_fork(l), right_fork(r), lifethread(&philosopher::dine, this)
+		name(n),
+		dinnerTable(t),
+		leftFork(l),
+		rightFork(r),
+		lifeThread(&philosopher::dine, this)
 	{
 	}
 	
 	~philosopher()
 	{
-		lifethread.join();
+		lifeThread.join();
 	}
 	
 	void dine()
 	{
-		while (!dinnertable.ready);
+		while (!dinnerTable.ready);
 		
 		do
 		{
 			think();
 			eat();
-		} while (dinnertable.ready);
+		} while (dinnerTable.ready);
 	}
 	
 	void print(const std::string& text)
 	{
-		std::lock_guard<std::mutex> cout_lock(g_lockprint);
+		std::lock_guard<std::mutex> cout_lock(g_lockPrint);
 		std::cout
 			<< std::left << std::setw(10) << std::setfill(' ')
 			<< name << text << std::endl;
+		++counter[name];
 	}
 	
 	void eat()
 	{
-		std::lock(left_fork.mutex, right_fork.mutex);
+		std::lock(leftFork.mutex, rightFork.mutex);
 		
-		std::lock_guard<std::mutex> left_lock(left_fork.mutex,   std::adopt_lock);
-		std::lock_guard<std::mutex> right_lock(right_fork.mutex, std::adopt_lock);
+		std::lock_guard<std::mutex> left_lock(leftFork.mutex,   std::adopt_lock);
+		std::lock_guard<std::mutex> right_lock(rightFork.mutex, std::adopt_lock);
 		
 		print(" started eating.");
 		
 		static thread_local std::uniform_int_distribution<> dist(1, 6);
-		std::this_thread::sleep_for(std::chrono::milliseconds(dist(rng) * 50));
-		
+		std::this_thread::sleep_for(std::chrono::milliseconds(dist(rng) * 10));
 		print(" finished eating.");
 	}
 	
 	void think()
 	{
 		static thread_local std::uniform_int_distribution<> wait(1, 6);
-		std::this_thread::sleep_for(std::chrono::milliseconds(wait(rng) * 150));
+		std::this_thread::sleep_for(std::chrono::milliseconds(wait(rng) * 5));
 		
 		print(" is thinking ");
 	}
@@ -93,7 +101,7 @@ void dine()
 	
 	{
 		table table;
-		std::array<philosopher, no_of_philosophers> philosophers
+		std::array<philosopher, numberOfPhilosophers> philosophers
 			{
 				{
 					{ "Aristotle", table, table.forks[0], table.forks[1] },
@@ -105,7 +113,7 @@ void dine()
 			};
 		
 		table.ready = true;
-		std::this_thread::sleep_for(std::chrono::seconds(10));
+		std::this_thread::sleep_for(std::chrono::seconds(20));
 		table.ready = false;
 	}
 	
@@ -115,6 +123,8 @@ void dine()
 int main()
 {
 	dine();
+	for (const auto& elem:counter)
+		std::cout <<  std::setw(10) << elem.first << " eats " << std::setw(10) << elem.second << std::endl;
 	
 	return 0;
 }
