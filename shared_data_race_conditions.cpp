@@ -7,7 +7,6 @@
 class Wallet {
 	int mMoney;
 	std::mutex mutex;
-	std::atomic<int> mMoneyAtomic;
 
 public:
 	Wallet(): mMoney(0) {}
