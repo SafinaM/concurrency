@@ -9,8 +9,9 @@
 #include <list>
 #include <mutex>
 #include <condition_variable>
+#include <vector>
 
-std::list<std::string> words;
+std::vector<std::string> words;
 std::mutex mutex;
 bool finished = false;
 
@@ -31,13 +32,29 @@ void addToList() {
 	finished = true;
 }
 
+template <typename T>
+bool cmp(const T& a, const T& b) {
+	return a > b;
+}
+
+// rude bubble sorting
+template <typename T>
+void sort(std::vector<T>& v, bool (*cmp)(const T&, const T&)) {
+	for (int i = 0; i < v.size(); ++i) {
+		for (int j = i + 1; j < v.size(); ++j) {
+			if (cmp(v[i],  v[j])) {
+				std::swap(v[i], v[j]);
+			}
+		}
+	}
+}
+
+
 void sortList() {
 	while (!finished) {
 		{
 			std::lock_guard<std::mutex> lockGuard(mutex);
-			words.sort([](const std::string& str1, const std::string& str2) {
-				return str1 < str2;
-			});
+			sort(words, cmp);
 		}
 		for (const auto& elem: words)
 			std::cout << elem << std::endl;
@@ -48,6 +65,7 @@ void sortList() {
 }
 
 int main() {
+	
 	std::thread thread1 = std::thread(addToList);
 	std::thread thread2 = std::thread(sortList);
 
