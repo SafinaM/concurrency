@@ -50,6 +50,7 @@ void listdir(const char *name, int indent)
 }
 
 int main(int argc, char** argv) {
+	
 	if (argc < 3)
 		std::cout << "Point two directories." << std::endl;
 	const std::string inputDir = argv[1];
