@@ -68,21 +68,21 @@ void do_some_job(uint32_t i) {
 
 int main() {
 	
-	constexpr uint32_t number = 30;
-	std::vector<std::thread> threads;
-	
-	for (uint32_t i = 0; i < number; ++i) {
-		threads.emplace_back(do_some_job, i);
-	}
-	
-	for (uint32_t i = 0; i < number; ++i)
-		threads[i].join();
+	int max_number_ot_threads = std::thread::hardware_concurrency();
 	
 	joining_thread j_thread1(do_some_job, 10);
-	joining_thread j_thread2;
-	
-	j_thread2 = std::move(j_thread1);
+	joining_thread j_thread2 = std::move(j_thread1);
 	
 	return 0;
 }
 
+//	constexpr uint32_t number = 30;
+//	std::vector<std::thread> threads;
+//
+//	for (uint32_t i = 0; i < number; ++i) {
+//		threads.emplace_back(do_some_job, i);
+//	}
+//
+//	for (uint32_t i = 0; i < number; ++i)
+//		threads[i].join();
+//
