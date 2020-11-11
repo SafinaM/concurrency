@@ -10,13 +10,13 @@
 template<typename T>
 class threadsafe_queue {
 public:
-	threadsafe_queue();
-	threadsafe_queue(const threadsafe_queue&);
+	threadsafe_queue() = default;
+	threadsafe_queue(const threadsafe_queue&) = delete;
 	threadsafe_queue& operator=(const threadsafe_queue&) = delete;
 	void push(T new_value) {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_queue.push(new_value);
-		cond.notify_one();
+		m_cond.notify_one();
 	}
 	bool try_pop(T& value) {
 		std::lock_guard<std::mutex> lock(m_mutex);
@@ -34,23 +34,25 @@ public:
 	}
 	void wait_and_pop(T& value) {
 		std::unique_lock<std::mutex> uniqueLock(m_mutex);
-		cond.wait(uniqueLock, [] {
+		m_cond.wait(uniqueLock, [this] {
 			return !m_queue.empty(); });
 		value = m_queue.front();
 		m_queue.pop();
 	}
 	std::shared_ptr<T> wait_and_pop(){
 		std::unique_lock<std::mutex> uniqueLock(m_mutex);
-		cond.wait(uniqueLock, [] {
+		m_cond.wait(uniqueLock, [this] {
 			return !m_queue.empty(); });
 		std::shared_ptr<Data> data_ptr = std::make_shared(m_queue.front());
 		m_queue.pop();
 		return data_ptr;
 	}
+
 	bool empty() const {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		return m_queue.empty();
 	}
+
 	int size() const {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		return m_queue.size();
@@ -67,14 +69,14 @@ threadsafe_queue<Data> data_queue;
 void data_preparation_thread() {
 	while(more_data_prepare()) {
 		Data data = get_data();
-		queue.push(data);
+		data_queue.push(data);
 		std::cout << "data number " << data.number << " was added!" << std::endl;
 	}
 }
 
 void data_processing_thread() {
 	while (true) {
-		const Data data;
+		Data data;
 		data_queue.wait_and_pop(data);
 		std::cout << "Here data should be processed!" << std::endl;
 		if (data.isLast()) {

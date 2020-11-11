@@ -11,7 +11,7 @@ static int currentDataSize = 0;
 struct Data;
 
 struct Data {
-	Data(int n);
+	Data(int n = 0);
 	long long number = 0;
 	bool isLast() const;
 };
