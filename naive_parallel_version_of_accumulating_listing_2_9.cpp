@@ -58,7 +58,7 @@ int main() {
 	std::vector<int> testVector0 = {1, 2, 3, 4, 20, 30, 12, 40, 50, 1, 10, 2, 8, 9, 12, 20, 3, 1};
 	std::vector<int> testVector1 = {1, 2, 3, 4, 20, 30, 12, 40, 50, 1, 10, 2, 8, 9, 12, 45, 23, 30, 20};
 	std::vector<int> testVector2 = {1, 2, 4, 5};
-	std::vector<int> testVector3 = {1, 2};
+	std::vector<int> testVector3 = {1, 10};
 	int result = 0;
 	int sum0 = parallel_accumulate(testVector0.begin(), testVector0.end(), result);
 	int sum1 = parallel_accumulate(testVector1.begin(), testVector1.end(), result);
