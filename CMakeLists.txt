@@ -20,7 +20,12 @@ add_executable(safe safe_stack_listing_3_5.cpp)
 add_executable(waiting_for_data_with_condition_variable_listing_4_1
 		waiting_for_data_with_condition_variable_listing_4_1.cpp
 		common_listing_4.cpp)
-add_executable(extracting_push_and_pop_from_4_1_listing extracting_push_and_pop_from_4_1_listing_4_5.cpp common_listing_4.cpp)
+add_executable(extracting_push_and_pop_from_4_1_listing
+		extracting_push_and_pop_from_4_1_listing_4_5.cpp
+		common_listing_4.cpp)
+add_executable(full_thread_safe_queue_listing_4_5
+		full_thread_safe_queue_listing_4_5.cpp
+		common_listing_4.cpp)
 add_executable(two_threads_ex ex_two_threads.cpp)
 add_executable(create_4_threads_ex ex_create_4_threads.cpp)
 add_executable(ex_stop_thread ex_stop_thread.cpp)
@@ -60,6 +65,7 @@ target_link_libraries(ex_sorted_word_list ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(waiting_for_data_with_condition_variable_listing_4_1 ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(extracting_push_and_pop_from_4_1_listing ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(queue ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(full_thread_safe_queue_listing_4_5 ${CMAKE_THREAD_LIBS_INIT})
 
 #find_package(GTest REQUIRED)
 #include_directories(${GTEST_INCLUDE_DIRS})
