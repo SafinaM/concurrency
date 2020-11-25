@@ -26,6 +26,9 @@ add_executable(extracting_push_and_pop_from_4_1_listing
 add_executable(full_thread_safe_queue_listing_4_5
 		full_thread_safe_queue_listing_4_5.cpp
 		common_listing_4.cpp)
+add_executable(return_value_from_async_with_future_4_6
+		return_value_from_async_with_future_4_6.cpp common_listing_4.cpp
+		)
 add_executable(two_threads_ex ex_two_threads.cpp)
 add_executable(create_4_threads_ex ex_create_4_threads.cpp)
 add_executable(ex_stop_thread ex_stop_thread.cpp)
@@ -66,6 +69,7 @@ target_link_libraries(waiting_for_data_with_condition_variable_listing_4_1 ${CMA
 target_link_libraries(extracting_push_and_pop_from_4_1_listing ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(queue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(full_thread_safe_queue_listing_4_5 ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(return_value_from_async_with_future_4_6 ${CMAKE_THREAD_LIBS_INIT})
 
 #find_package(GTest REQUIRED)
 #include_directories(${GTEST_INCLUDE_DIRS})
